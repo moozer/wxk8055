@@ -74,6 +74,11 @@ class TestDataSrc(unittest.TestCase):
         d.next()
         self.assertEqual( d.PendingCount, 0)
         
+    def testGetMaxMinDefault(self):
+        d = DataSrc( CsvFile )
+        self.assertEqual(d.GetMax( 10 ), 10)
+        self.assertEqual(d.GetMin( 0), 0 )
+
  
 class TestCsvDataSrc(unittest.TestCase):
 

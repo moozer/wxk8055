@@ -63,13 +63,18 @@ class DataSrc( object ):
         ''' @return: the number of inputs "lines" in the system '''
         return self._Inputs
 
-    def GetMax(self):
+    def GetMax(self, default = 10):
         ''' @returns the highest value of currently read data '''
+        if len(self._data[0]) == 0:
+            return default
         maxlist = [max( datalist ) for datalist in self._data]
         return max(maxlist)
 
-    def GetMin(self):
+    def GetMin(self, default = 0):
         ''' @returns the highest value of currently read data '''
+        if len(self._data[0]) == 0:
+            return default
+
         minlist = [min( datalist ) for datalist in self._data]
         return min(minlist)
 
