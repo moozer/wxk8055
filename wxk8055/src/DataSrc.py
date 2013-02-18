@@ -4,6 +4,7 @@ Created on 18 Feb 2013
 @author: moz
 '''
 import csv
+import random
 
 class DataSrc( object ):
     """ Base class for data sources
@@ -18,7 +19,7 @@ class DataSrc( object ):
         
     def _InitDataArray(self):
         self._data = []  # array to hold data to show
-        for channel in range( 0, self._Inputs ):
+        for channel in range( 0, self._Inputs ): 
             self._data.append( [] )
 
     @property
@@ -34,7 +35,7 @@ class DataSrc( object ):
 
     def next(self):
         ''' @return: the values read since last call to this function '''
-        val = [0] # dummy value in array
+        val = [random.uniform(0, 100)] # dummy value in array
         self._AppendData(val)
         return val 
 

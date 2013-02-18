@@ -34,37 +34,37 @@ from matplotlib.backends.backend_wxagg import \
     NavigationToolbar2WxAgg as NavigationToolbar
 import numpy as np
 import pylab
+from DataSrc import DataSrc
 
-
-class DataGen(object):
-    """ A silly class that generates pseudo-random data for
-        display in the plot.
-    """
-    def __init__(self, init=50):
-        self.data = [init, init]
-        self.init = init
-        
-    def next(self):
-        self._recalc_data(0)
-        self._recalc_data(1)
-        return [self.data]
-    
-    def _recalc_data(self, entry):
-        delta = random.uniform(-0.5, 0.5)
-        r = random.random()
-
-        if r > 0.9:
-            self.data[entry] += delta * 15
-        elif r > 0.8: 
-            # attraction to the initial value
-            delta += (0.5 if self.init > self.data[entry] else -0.5)
-            self.data[entry] += delta
-        else:
-            self.data[entry] += delta
-    
-    @property
-    def Inputs(self):
-        return 2       
+#class DataGen(object):
+#    """ A silly class that generates pseudo-random data for
+#        display in the plot.
+#    """
+#    def __init__(self, init=50):
+#        self.data = [init, init]
+#        self.init = init
+#        
+#    def next(self):
+#        self._recalc_data(0)
+#        self._recalc_data(1)
+#        return [self.data]
+#    
+#    def _recalc_data(self, entry):
+#        delta = random.uniform(-0.5, 0.5)
+#        r = random.random()
+#
+#        if r > 0.9:
+#            self.data[entry] += delta * 15
+#        elif r > 0.8: 
+#            # attraction to the initial value
+#            delta += (0.5 if self.init > self.data[entry] else -0.5)
+#            self.data[entry] += delta
+#        else:
+#            self.data[entry] += delta
+#    
+#    @property
+#    def Inputs(self):
+#        return 2       
 
 
 
@@ -121,24 +121,10 @@ class GraphFrame(wx.Frame):
     """
     title = 'Demo: dynamic matplotlib graph'
     
-
-    def AppendData(self):
-        ''' retrieves the latest data and appends it to the data list
-        ''' 
-        data = self._datagen.next()
-        for d in data:
-            for channel in range(0, self._datagen.Inputs):
-                self._data[channel].append(d[channel])
-
-    def __init__(self, datagen = DataGen(), RefreshTime = 100 ):
+    def __init__(self, datagen, RefreshTime = 100 ):
         wx.Frame.__init__(self, None, -1, self.title)
         
         self._datagen = datagen
-        self._data = []  # array to hold data to show
-        for channel in range( 0, self._datagen.Inputs ):
-            self._data.append( [] )
-        
-        self.AppendData()
 
         self._paused = False
         self._plot_data = [0, 1]
@@ -231,16 +217,11 @@ class GraphFrame(wx.Frame):
         # plot the data as a line series, and save the reference 
         # to the plotted line series
         #
-        self._plot_data[0] = self.axes.plot(
-            self._data[0], 
-            linewidth=1,
-            color=(1, 1, 0),
-            )[0]
-        self._plot_data[1] = self.axes.plot(
-            self._data[1], 
-            linewidth=1,
-            color=(1, 0, 1),
-            )[0]
+        for i in range( 0, self._datagen.Inputs ):
+            self._plot_data[i] = self.axes.plot(self._datagen.GetSeries(i),
+                                                linewidth=1,
+                                                color=(1, 1, 0),
+                                                )[i]
             
 
     def GetXMinMax(self, XWindow = 50):
@@ -249,7 +230,7 @@ class GraphFrame(wx.Frame):
         # xmax.
         #
         if self.xmax_control.is_auto():
-            xmax = len(self._data[0]) if len(self._data[0]) > XWindow else XWindow
+            xmax = self._datagen.Count if self._datagen.Count > XWindow else XWindow
         else:
             xmax = int(self.xmax_control.manual_value())
         
@@ -270,16 +251,18 @@ class GraphFrame(wx.Frame):
         #
         
         if self.ymin_control.is_auto():
-            yminlist = [min( datalist ) for datalist in self._data]
-            ymin = round(min(yminlist), 0) - 1
+            ymin = round( self._datagen.GetMin()) - 1
         else:
             ymin = int(self.ymin_control.manual_value())
             
         if self.ymax_control.is_auto():
-            ymaxlist = [max( datalist ) for datalist in self._data]
-            ymax = round(max(ymaxlist), 0) + 1
+            ymax = round( self._datagen.GetMax()) - 1
         else:
             ymax = int(self.ymax_control.manual_value())
+            
+        if ymax == ymin:
+            ymax = ymin+1
+            
         return ymin, ymax
 
     def draw_plot(self):
@@ -308,10 +291,9 @@ class GraphFrame(wx.Frame):
         pylab.setp(self.axes.get_xticklabels(), 
             visible=self.cb_xlab.IsChecked())
         
-        self._plot_data[0].set_xdata(np.arange(len(self._data[0])))
-        self._plot_data[0].set_ydata(np.array(self._data[0]))
-        self._plot_data[1].set_xdata(np.arange(len(self._data[1])))
-        self._plot_data[1].set_ydata(np.array(self._data[1]))
+        for i in range( 0, self._datagen.Inputs ):
+            self._plot_data[i].set_xdata(np.arange( self._datagen.Count ))
+            self._plot_data[i].set_ydata(np.array(self._datagen.GetSeries(i)))
         
         self.canvas.draw()
     
@@ -349,7 +331,7 @@ class GraphFrame(wx.Frame):
         # (to respond to scale modifications, grid change, etc.)
         #
         if not self._paused:
-            self.AppendData()
+            self._datagen.next() # no update of data
         
         self.draw_plot()
     
@@ -371,7 +353,7 @@ class GraphFrame(wx.Frame):
 
 if __name__ == '__main__':
     app = wx.PySimpleApp()
-    app.frame = GraphFrame( DataGen(), 100 )
+    app.frame = GraphFrame( DataSrc( 100 ), 100 )
     app.frame.Show()
     app.MainLoop()
 
