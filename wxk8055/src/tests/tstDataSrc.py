@@ -41,10 +41,10 @@ class TestCsvDataSrc(unittest.TestCase):
         self.assertEqual( d.next(), [CsvData[1]] )
         self.assertEqual( d.next(), [CsvData[2]] )
         
-#    def testGetAll(self):
-#        d = CsvDataSrc( CsvFile )
-#        self.assertEqual( len(d.next()), CsvEntriesCount )
-#    
+    def testGetAll(self):
+        d = CsvDataSrc( CsvFile )
+        self.assertEqual( len(d.next()), CsvEntriesCount )
+    
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testDataSrc']
     unittest.main()
