@@ -55,11 +55,12 @@ class TestCsvDataSrc(unittest.TestCase):
         d = CsvDataSrc( CsvFile )
         self.assertEqual( len(d.next()), CsvEntriesCount )
         
-#    def testGetMaxMin(self):
-#        d = CsvDataSrc( CsvFile )
-#        self.assertEqual(d.GetMax(), CsvEntriesMaxVal)
-#        self.assertEqual(d.GetMin(), CsvEntriesMinVal)
-#        
+    def testGetMaxMin(self):
+        d = CsvDataSrc( CsvFile )
+        d.next()
+        self.assertEqual(d.GetMax(), CsvEntriesMaxVal)
+        self.assertEqual(d.GetMin(), CsvEntriesMinVal)
+        
     
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testDataSrc']
