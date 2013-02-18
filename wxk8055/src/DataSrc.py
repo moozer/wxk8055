@@ -20,11 +20,17 @@ class DataSrc( object ):
         ''' @return: the update interval specified at construction time '''
         return self._ReadInterval
 
+
+    def _AppendData(self, data):
+        ''' saves the entries to the internal data storage '''
+        for i in range(0, self._Inputs):
+            self._data[i].append(data[i])
+
     def next(self):
         ''' @return: the values read since last call to this function '''
-        val = 0 # dummy value
-        self._data[0].append( val )
-        return [val] 
+        val = [0] # dummy value in array
+        self._AppendData(val)
+        return val 
 
     @property
     def Inputs(self):
