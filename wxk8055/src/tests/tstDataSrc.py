@@ -5,6 +5,7 @@ Created on 18 Feb 2013
 '''
 import unittest
 from DataSrc import DataSrc, CsvDataSrc
+import time
 
 interval = 100 
 TestCount = 10
@@ -15,6 +16,11 @@ CsvData = [[0,0,0], [1,0,0], [2,0,0]]
 CsvEntriesCount = 469
 CsvEntriesMaxVal = 468
 CsvEntriesMinVal = 0
+testvar = 0
+
+def IncFunction():
+    testvar = testvar +1
+
 
 class TestDataSrc(unittest.TestCase):
 
@@ -31,8 +37,8 @@ class TestDataSrc(unittest.TestCase):
         for i in range( 0, TestCount ):
             d.next()
 
-        self.assertEqual(d.GetMax(), 0)
-        self.assertEqual(d.GetMin(), 0)
+        self.assertLessEqual( d.GetMax(), 100 )
+        self.assertGreaterEqual(d.GetMin(), 0)
         
         self.assertEqual(d.Count, TestCount)
         
@@ -40,9 +46,24 @@ class TestDataSrc(unittest.TestCase):
         d = DataSrc( interval )
         for i in range( 0, TestCount ):
             d.next()
-
-        self.assertEqual(d.GetSeries(0), [0]*TestCount)
+        
+        self.assertEqual(len(d.GetSeries(0)), TestCount)
+        for entry in d.GetSeries(0):
+            self.assertLessEqual( entry, 100 )
+            self.assertGreaterEqual(entry, 0)
     
+#    def testTimerThread(self):
+#        d = DataSrc( interval )
+#        self.assertEqual(d.IsTimerRunning, False)
+#
+#        testvar = 0
+#        d.StartTimer( IncFunction )
+#        self.assertEqual(d.IsTimerRunning, True)
+#
+#        time.sleep( interval )
+#
+#        self.assertEqual( testvar, 1 )
+# 
  
 class TestCsvDataSrc(unittest.TestCase):
 
