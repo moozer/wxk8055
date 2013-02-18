@@ -39,5 +39,12 @@ class CsvDataSrc( DataSrc ):
     
     def next(self):
         ''' @return: the entry converted to float '''
-        return map(float, self._CsvReader.next().values() )
+        if self._ReadInterval > 0:
+            return [map(float, self._CsvReader.next().values() )]
     
+        # else, we dump all data.
+        retarray = []
+        for entry in self._CsvReader:
+            retarray.append(entry)
+            
+        return retarray
