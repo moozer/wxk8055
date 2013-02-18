@@ -12,11 +12,13 @@ two DA converters
 import wx
 from wx_mpl_dynamic_graph import GraphFrame
 from k8055DataSrc import k8055DataSrc
+from DataSrc import CsvDataSrc
 
 if __name__ == '__main__':
     # TODO: add check on existence...
     # TODO: some GUI selection of board
-    DataSrc = k8055DataSrc()
+    #DataSrc = k8055DataSrc()
+    DataSrc = CsvDataSrc( 'tests/data/TwoInputs.csv')    
     # TODO: Some GUI to specify the interval
     ReadInterval = 500 # in ms
    

@@ -127,7 +127,8 @@ class GraphFrame(wx.Frame):
         self._datagen = datagen
 
         self._paused = False
-        self._plot_data = [0, 1]
+        
+        self._plot_data = [i for i in range( 0, self._datagen.Inputs) ]
         
         self.create_menu()
         self.create_status_bar()
@@ -221,7 +222,7 @@ class GraphFrame(wx.Frame):
             self._plot_data[i] = self.axes.plot(self._datagen.GetSeries(i),
                                                 linewidth=1,
                                                 color=(1, 1, 0),
-                                                )[i]
+                                                )[0]
             
 
     def GetXMinMax(self, XWindow = 50):
