@@ -3,6 +3,7 @@ Created on 18 Feb 2013
 
 @author: moz
 '''
+import csv
 
 class DataSrc( object ):
     """ Base class for data sources
@@ -29,7 +30,10 @@ class DataSrc( object ):
     
 class CsvDataSrc( DataSrc ):
     def __init__(self, filename, ReadInterval = 0 ):
-        self._file = open( filename, 'r')
-        
         super(CsvDataSrc,self).__init__( ReadInterval =  ReadInterval )
+        self._csvfile = open( filename, 'r')
+        
+        self._CsvReader = csv.DictReader( self._csvfile, delimiter='\t' )
+        self._Inputs = len( self._CsvReader.fieldnames )
+        
         pass

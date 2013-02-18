@@ -29,9 +29,9 @@ class TestCsvDataSrc(unittest.TestCase):
     def testBadFilename(self):
         self.assertRaises( IOError, CsvDataSrc, 'NonExistingFilename')
 
-#    def testNext(self):
-#        d = CsvDataSrc( CsvFile )
-#        self.assertEqual( Inputs, d.Inputs )
+    def testNext(self):
+        d = CsvDataSrc( CsvFile )
+        self.assertEqual( Inputs, d.Inputs )
     
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testDataSrc']
