@@ -11,6 +11,8 @@ CsvFile = 'data/TwoInputs.csv'
 Inputs = 3
 CsvData = [[0,0,0], [1,0,0], [2,0,0]]
 CsvEntriesCount = 469
+CsvEntriesMaxVal = 468
+CsvEntriesMinVal = 0
 
 class TestDataSrc(unittest.TestCase):
 
@@ -22,6 +24,14 @@ class TestDataSrc(unittest.TestCase):
         d = DataSrc( interval )
         self.assertEqual( len(d.next()), d.Inputs )
     
+    def testGetMaxMin(self):
+        d = DataSrc( interval )
+        for i in range( 0, 10 ):
+            d.next()
+
+        self.assertEqual(d.GetMax(), 0)
+        self.assertEqual(d.GetMin(), 0)
+ 
 class TestCsvDataSrc(unittest.TestCase):
 
     def testConstruction(self):
@@ -44,6 +54,12 @@ class TestCsvDataSrc(unittest.TestCase):
     def testGetAll(self):
         d = CsvDataSrc( CsvFile )
         self.assertEqual( len(d.next()), CsvEntriesCount )
+        
+#    def testGetMaxMin(self):
+#        d = CsvDataSrc( CsvFile )
+#        self.assertEqual(d.GetMax(), CsvEntriesMaxVal)
+#        self.assertEqual(d.GetMin(), CsvEntriesMinVal)
+#        
     
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testDataSrc']

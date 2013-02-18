@@ -12,6 +12,7 @@ class DataSrc( object ):
     def __init__(self, ReadInterval ):
         self._ReadInterval = ReadInterval
         self._Inputs = 1 # just hardcode something that corresponds to next()
+        self._data = [[]]
         pass
         
     @property
@@ -21,12 +22,25 @@ class DataSrc( object ):
 
     def next(self):
         ''' @return: the values read since last call to this function '''
-        return [[0]] # dummy value
+        val = 0 # dummy value
+        self._data[0].append( val )
+        return [val] 
 
     @property
     def Inputs(self):
         ''' @return: the number of inputs "lines" in the system '''
         return self._Inputs
+
+    def GetMax(self):
+        ''' @returns the highest value of currently read data '''
+        maxlist = [max( datalist ) for datalist in self._data]
+        return max(maxlist)
+
+    def GetMin(self):
+        ''' @returns the highest value of currently read data '''
+        minlist = [min( datalist ) for datalist in self._data]
+        return min(minlist)
+    
     
 class CsvDataSrc( DataSrc ):
     def __init__(self, filename, ReadInterval = 0 ):
