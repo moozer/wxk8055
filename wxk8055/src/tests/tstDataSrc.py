@@ -33,7 +33,16 @@ class TestDataSrc(unittest.TestCase):
 
         self.assertEqual(d.GetMax(), 0)
         self.assertEqual(d.GetMin(), 0)
-        self.assertEqual(d.Count, TestCount)        
+        
+        self.assertEqual(d.Count, TestCount)
+        
+    def testGetSeries(self):
+        d = DataSrc( interval )
+        for i in range( 0, TestCount ):
+            d.next()
+
+        self.assertEqual(d.GetSeries(0), [0]*TestCount)
+    
  
 class TestCsvDataSrc(unittest.TestCase):
 

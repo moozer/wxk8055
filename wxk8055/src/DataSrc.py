@@ -57,7 +57,11 @@ class DataSrc( object ):
     def Count(self):
         ''' @return: the number of data entries in the data list '''
         return len( self._data[0] )
-   
+
+    
+    def GetSeries(self, InputNumber):
+        ''' @return:The data corresponding to the specified "column" '''
+        return self._data[InputNumber]
     
 class CsvDataSrc( DataSrc ):
     def __init__(self, filename, ReadInterval = 0 ):
