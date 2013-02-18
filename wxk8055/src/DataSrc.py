@@ -36,12 +36,16 @@ class DataSrc( object ):
 
 
     def _AppendData(self, data):
-        ''' saves the entries to the internal data storage '''
-        for i in range(0, self._Inputs):
-            self._data[i].append(data[i])
+        ''' saves the entries to the internal data storage 
+        @param data: a list of lists of data - might look odd for single values :-) ie. [[3]]
+        '''
+        for entry in data:
+            for i in range(0, self._Inputs):
+                self._data[i].append(entry[i])
 
     def _ReadData(self):
-        return random.uniform(0, 100) # dummy value
+        ''' @return: a list of lists of acquired data '''
+        return [[random.uniform(0, 100)]] # dummy value
 
     def next(self):
         ''' @return: the values read since last call to this function '''
@@ -50,7 +54,7 @@ class DataSrc( object ):
             self._PendingData = [] # and reset to zero.
             
         if len(val) == 0:
-            val = [self._ReadData()] # force reading one line if nothing is pending
+            val = self._ReadData() # force reading one line if nothing is pending
         self._AppendData(val)
         return val 
 
@@ -89,9 +93,9 @@ class DataSrc( object ):
     def _ThreadMain(self, EventFunction):
         while( self._RunThread.isSet( )):
             data = self._ReadData()
-            self._PendingDataLock.acquire()
-            self._PendingData.append( data )
-            self._PendingDataLock.release()
+            with self._PendingDataLock:
+                self._PendingData.append( data )
+            
             EventFunction()
         
             # TODO: do a timer thing to do real ms interval, not runtime+interval
@@ -113,11 +117,6 @@ class DataSrc( object ):
     @property 
     def PendingCount(self):
         return len( self._PendingData )
-
-    
-    
-    
-    
     
     
 class CsvDataSrc( DataSrc ):
@@ -130,21 +129,19 @@ class CsvDataSrc( DataSrc ):
         self._InitDataArray()
         pass
     
-    def next(self):
-        ''' @return: the entry converted to float '''
+    def _ReadData(self):
+        ''' @return: a list of entries converted to float '''
         if self._ReadInterval > 0:
             entry = map(float, self._CsvReader.next().values() )
-            self._AppendData(entry)
             return [entry]
     
         # else, we dump all data.
         retarray = []
         for entry in self._CsvReader:
             fentry = map(float, entry.values() )
-            self._AppendData(fentry)            
             retarray.append(fentry)
             
         return retarray
     
-    def _ReadData(self):
-        return self.next()
+#    def next(self):
+#        return self.next()
