@@ -10,6 +10,7 @@ class DataSrc( object ):
     """
     def __init__(self, ReadInterval ):
         self._ReadInterval = ReadInterval
+        self._Inputs = len( self.next() )
         pass
         
     @property
@@ -24,19 +25,11 @@ class DataSrc( object ):
     @property
     def Inputs(self):
         ''' @return: the number of inputs "lines" in the system '''
-        return len( self.next() )
-        pass
+        return self._Inputs
     
-    
-
-#class CsvDataSrc(object):
-#    '''
-#    classdocs
-#    '''
-#
-#
-#    def __init__(selfparams):
-#        '''
-#        Constructor
-#        '''
+class CsvDataSrc( DataSrc ):
+    def __init__(self, filename, ReadInterval = 0 ):
+        self._file = open( filename, 'r')
         
+        super(CsvDataSrc,self).__init__( ReadInterval =  ReadInterval )
+        pass
