@@ -52,7 +52,12 @@ class DataSrc( object ):
         ''' @returns the highest value of currently read data '''
         minlist = [min( datalist ) for datalist in self._data]
         return min(minlist)
-    
+
+    @property
+    def Count(self):
+        ''' @return: the number of data entries in the data list '''
+        return len( self._data[0] )
+   
     
 class CsvDataSrc( DataSrc ):
     def __init__(self, filename, ReadInterval = 0 ):

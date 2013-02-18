@@ -7,6 +7,8 @@ import unittest
 from DataSrc import DataSrc, CsvDataSrc
 
 interval = 100 
+TestCount = 10
+
 CsvFile = 'data/TwoInputs.csv'
 Inputs = 3
 CsvData = [[0,0,0], [1,0,0], [2,0,0]]
@@ -26,11 +28,12 @@ class TestDataSrc(unittest.TestCase):
     
     def testGetMaxMin(self):
         d = DataSrc( interval )
-        for i in range( 0, 10 ):
+        for i in range( 0, TestCount ):
             d.next()
 
         self.assertEqual(d.GetMax(), 0)
         self.assertEqual(d.GetMin(), 0)
+        self.assertEqual(d.Count, TestCount)        
  
 class TestCsvDataSrc(unittest.TestCase):
 
