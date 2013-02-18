@@ -47,7 +47,7 @@ class DataGen(object):
     def next(self):
         self._recalc_data(0)
         self._recalc_data(1)
-        return self.data
+        return [self.data]
     
     def _recalc_data(self, entry):
         delta = random.uniform(-0.5, 0.5)
@@ -61,6 +61,11 @@ class DataGen(object):
             self.data[entry] += delta
         else:
             self.data[entry] += delta
+    
+    @property
+    def Inputs(self):
+        return 2       
+
 
 
 class BoundControlBox(wx.Panel):
@@ -116,23 +121,35 @@ class GraphFrame(wx.Frame):
     """
     title = 'Demo: dynamic matplotlib graph'
     
+
+    def AppendData(self):
+        ''' retrieves the latest data and appends it to the data list
+        ''' 
+        data = self._datagen.next()
+        for d in data:
+            for channel in range(0, self._datagen.Inputs):
+                self._data[channel].append(d[channel])
+
     def __init__(self, datagen = DataGen(), RefreshTime = 100 ):
         wx.Frame.__init__(self, None, -1, self.title)
         
-        self.datagen = datagen
-        d = self.datagen.next()
-        self.data = [[d[0]],[d[1]]]
-        #self.data = [self.datagen.next()]
-        self.paused = False
-        self.plot_data = [0, 1]
+        self._datagen = datagen
+        self._data = []  # array to hold data to show
+        for channel in range( 0, self._datagen.Inputs ):
+            self._data.append( [] )
+        
+        self.AppendData()
+
+        self._paused = False
+        self._plot_data = [0, 1]
         
         self.create_menu()
         self.create_status_bar()
         self.create_main_panel()
         
-        self.redraw_timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.on_redraw_timer, self.redraw_timer)        
-        self.redraw_timer.Start(RefreshTime)
+        self._redraw_timer = wx.Timer(self)
+        self.Bind(wx.EVT_TIMER, self.on_redraw_timer, self._redraw_timer)        
+        self._redraw_timer.Start(RefreshTime)
 
 
     def create_menu(self):
@@ -214,52 +231,62 @@ class GraphFrame(wx.Frame):
         # plot the data as a line series, and save the reference 
         # to the plotted line series
         #
-        self.plot_data[0] = self.axes.plot(
-            self.data[0], 
+        self._plot_data[0] = self.axes.plot(
+            self._data[0], 
             linewidth=1,
             color=(1, 1, 0),
             )[0]
-        self.plot_data[1] = self.axes.plot(
-            self.data[1], 
+        self._plot_data[1] = self.axes.plot(
+            self._data[1], 
             linewidth=1,
             color=(1, 0, 1),
             )[0]
             
-    def draw_plot(self):
-        """ Redraws the plot
-        """
-        # when xmin is on auto, it "follows" xmax to produce a 
+
+    def GetXMinMax(self, XWindow = 50):
+        # when xmin is on auto, it "follows" xmax to produce a
         # sliding window effect. therefore, xmin is assigned after
         # xmax.
         #
         if self.xmax_control.is_auto():
-            xmax = len(self.data[0]) if len(self.data[0]) > 50 else 50
+            xmax = len(self._data[0]) if len(self._data[0]) > XWindow else XWindow
         else:
             xmax = int(self.xmax_control.manual_value())
-            
-        if self.xmin_control.is_auto():            
-            xmin = xmax - 50
+        
+        if self.xmin_control.is_auto():
+            xmin = xmax - XWindow
         else:
             xmin = int(self.xmin_control.manual_value())
 
+        return xmin, xmax
+
+    def GetYMaxMin(self):
         # for ymin and ymax, find the minimal and maximal values
         # in the data set and add a mininal margin.
-        # 
-        # note that it's easy to change this scheme to the 
+        #
+        # note that it's easy to change this scheme to the
         # minimal/maximal value in the current display, and not
         # the whole data set.
-        # 
+        #
+        
         if self.ymin_control.is_auto():
-            extr = min( min(self.data[0]), min(self.data[1] ))
-            ymin = round( extr , 0) - 1
+            yminlist = [min( datalist ) for datalist in self._data]
+            ymin = round(min(yminlist), 0) - 1
         else:
             ymin = int(self.ymin_control.manual_value())
-        
+            
         if self.ymax_control.is_auto():
-            extr = max( max(self.data[0]), max(self.data[1] ))            
-            ymax = round(extr, 0) + 1
+            ymaxlist = [max( datalist ) for datalist in self._data]
+            ymax = round(max(ymaxlist), 0) + 1
         else:
             ymax = int(self.ymax_control.manual_value())
+        return ymin, ymax
+
+    def draw_plot(self):
+        """ Redraws the plot
+        """
+        xmin, xmax = self.GetXMinMax()
+        ymin, ymax = self.GetYMaxMin()
 
         self.axes.set_xbound(lower=xmin, upper=xmax)
         self.axes.set_ybound(lower=ymin, upper=ymax)
@@ -281,18 +308,18 @@ class GraphFrame(wx.Frame):
         pylab.setp(self.axes.get_xticklabels(), 
             visible=self.cb_xlab.IsChecked())
         
-        self.plot_data[0].set_xdata(np.arange(len(self.data[0])))
-        self.plot_data[0].set_ydata(np.array(self.data[0]))
-        self.plot_data[1].set_xdata(np.arange(len(self.data[1])))
-        self.plot_data[1].set_ydata(np.array(self.data[1]))
+        self._plot_data[0].set_xdata(np.arange(len(self._data[0])))
+        self._plot_data[0].set_ydata(np.array(self._data[0]))
+        self._plot_data[1].set_xdata(np.arange(len(self._data[1])))
+        self._plot_data[1].set_ydata(np.array(self._data[1]))
         
         self.canvas.draw()
     
     def on_pause_button(self, event):
-        self.paused = not self.paused
+        self._paused = not self._paused
     
     def on_update_pause_button(self, event):
-        label = "Resume" if self.paused else "Pause"
+        label = "Resume" if self._paused else "Pause"
         self.pause_button.SetLabel(label)
     
     def on_cb_grid(self, event):
@@ -318,13 +345,11 @@ class GraphFrame(wx.Frame):
             self.flash_status_message("Saved to %s" % path)
     
     def on_redraw_timer(self, event):
-        # if paused do not add data, but still redraw the plot
+        # if _paused do not add data, but still redraw the plot
         # (to respond to scale modifications, grid change, etc.)
         #
-        if not self.paused:
-            d = self.datagen.next()
-            self.data[0].append( d[0] )            
-            self.data[1].append( d[1] )
+        if not self._paused:
+            self.AppendData()
         
         self.draw_plot()
     
@@ -346,7 +371,7 @@ class GraphFrame(wx.Frame):
 
 if __name__ == '__main__':
     app = wx.PySimpleApp()
-    app.frame = GraphFrame( DataGen(), 500 )
+    app.frame = GraphFrame( DataGen(), 100 )
     app.frame.Show()
     app.MainLoop()
 
