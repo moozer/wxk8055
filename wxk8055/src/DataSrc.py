@@ -7,6 +7,7 @@ import csv
 import random
 import threading
 import time
+import copy
 
 class DataSrc( object ):
     """ Base class for data sources
@@ -15,15 +16,17 @@ class DataSrc( object ):
 
     def __init__(self, ReadInterval ):
         self._ReadInterval = ReadInterval
-        self._Inputs = 1 # just hardcode something that corresponds to next()
+        self._Inputs = 1 # just hardcode something that corresponds to _ReadData()
+        self._WorkerThread = None 
+        self._RunThread = threading.Event() # if isSet(), then the thread is running
+        self._PendingData = [] # retrieved data, that has not been next()'ed.
+        self._PendingDataLock = threading.Lock()
         self._InitDataArray()
-        self._WorkerThread = None
-        self._RunThread = threading.Event()
         pass
         
     def _InitDataArray(self):
         self._data = []  # array to hold data to show
-        for channel in range( 0, self._Inputs ): 
+        for channel in range( 0, self._Inputs ):  #@UnusedVariable
             self._data.append( [] )
 
     @property
@@ -42,7 +45,12 @@ class DataSrc( object ):
 
     def next(self):
         ''' @return: the values read since last call to this function '''
-        val = [self._ReadData()] # dummy value in array
+        with self._PendingDataLock:
+            val = copy.copy( self._PendingData )
+            self._PendingData = [] # and reset to zero.
+            
+        if len(val) == 0:
+            val = [self._ReadData()] # force reading one line if nothing is pending
         self._AppendData(val)
         return val 
 
@@ -80,17 +88,37 @@ class DataSrc( object ):
 
     def _ThreadMain(self, EventFunction):
         while( self._RunThread.isSet( )):
-            self._ReadData()
+            data = self._ReadData()
+            self._PendingDataLock.acquire()
+            self._PendingData.append( data )
+            self._PendingDataLock.release()
             EventFunction()
         
             # TODO: do a timer thing to do real ms interval, not runtime+interval
             time.sleep( (1.0*self._ReadInterval)/1000 )
 
     def StartTimer(self, EventFunction):
-        self._WorkerThread = threading.Thread( name="DataSrc timer thread", target=self._ThreadMain, args=(EventFunction, ) )
+        self._WorkerThread = threading.Thread( name="DataSrc timer thread", 
+                                               target=self._ThreadMain, 
+                                               args=(EventFunction, ) )
         self._WorkerThread.daemon = True
         self._RunThread.set()
         self._WorkerThread.start()
+
+    def StopTimer(self):
+        self._RunThread.clear()
+        while self._WorkerThread.isAlive():
+            time.sleep( 0.010 )
+
+    @property 
+    def PendingCount(self):
+        return len( self._PendingData )
+
+    
+    
+    
+    
+    
     
 class CsvDataSrc( DataSrc ):
     def __init__(self, filename, ReadInterval = 0 ):
@@ -117,3 +145,6 @@ class CsvDataSrc( DataSrc ):
             retarray.append(fentry)
             
         return retarray
+    
+    def _ReadData(self):
+        return self.next()

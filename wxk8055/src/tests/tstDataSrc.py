@@ -21,7 +21,6 @@ testvar = 0
 def IncFunction():
     global testvar
     testvar = testvar +1
-    print "testvar=",testvar
 
 
 class TestDataSrc(unittest.TestCase):
@@ -63,11 +62,18 @@ class TestDataSrc(unittest.TestCase):
         d.StartTimer( IncFunction )
         self.assertEqual(d.IsTimerRunning, True)
 
-        #time.sleep( interval/1000 )
+        time.sleep( .2*interval/1000 ) # .2 to make sure that we have at least started
         self.assertEqual( testvar, 1 )
+        self.assertEqual( d.PendingCount, 1)
         time.sleep( 1.2*interval/1000 ) # 1.2 to make sure that we have two periods
         self.assertEqual( testvar, 2 )
+        self.assertEqual( d.PendingCount, 2)
  
+        d.StopTimer()
+        
+        d.next()
+        self.assertEqual( d.PendingCount, 0)
+        
  
 class TestCsvDataSrc(unittest.TestCase):
 
