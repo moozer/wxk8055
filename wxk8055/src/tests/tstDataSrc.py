@@ -7,7 +7,7 @@ import unittest
 from DataSrc import DataSrc, CsvDataSrc
 import time
 
-interval = 100 
+interval = 100.0 
 TestCount = 10
 
 CsvFile = 'data/TwoInputs.csv'
@@ -19,7 +19,9 @@ CsvEntriesMinVal = 0
 testvar = 0
 
 def IncFunction():
+    global testvar
     testvar = testvar +1
+    print "testvar=",testvar
 
 
 class TestDataSrc(unittest.TestCase):
@@ -52,18 +54,20 @@ class TestDataSrc(unittest.TestCase):
             self.assertLessEqual( entry, 100 )
             self.assertGreaterEqual(entry, 0)
     
-#    def testTimerThread(self):
-#        d = DataSrc( interval )
-#        self.assertEqual(d.IsTimerRunning, False)
-#
-#        testvar = 0
-#        d.StartTimer( IncFunction )
-#        self.assertEqual(d.IsTimerRunning, True)
-#
-#        time.sleep( interval )
-#
-#        self.assertEqual( testvar, 1 )
-# 
+    def testTimerThread(self):
+        d = DataSrc( interval )
+        self.assertEqual(d.IsTimerRunning, False)
+
+        global testvar
+        testvar = 0
+        d.StartTimer( IncFunction )
+        self.assertEqual(d.IsTimerRunning, True)
+
+        #time.sleep( interval/1000 )
+        self.assertEqual( testvar, 1 )
+        time.sleep( 1.2*interval/1000 ) # 1.2 to make sure that we have two periods
+        self.assertEqual( testvar, 2 )
+ 
  
 class TestCsvDataSrc(unittest.TestCase):
 

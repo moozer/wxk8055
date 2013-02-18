@@ -5,6 +5,8 @@ Created on 18 Feb 2013
 '''
 import csv
 import random
+import threading
+import time
 
 class DataSrc( object ):
     """ Base class for data sources
@@ -15,6 +17,8 @@ class DataSrc( object ):
         self._ReadInterval = ReadInterval
         self._Inputs = 1 # just hardcode something that corresponds to next()
         self._InitDataArray()
+        self._WorkerThread = None
+        self._RunThread = threading.Event()
         pass
         
     def _InitDataArray(self):
@@ -33,9 +37,12 @@ class DataSrc( object ):
         for i in range(0, self._Inputs):
             self._data[i].append(data[i])
 
+    def _ReadData(self):
+        return random.uniform(0, 100) # dummy value
+
     def next(self):
         ''' @return: the values read since last call to this function '''
-        val = [random.uniform(0, 100)] # dummy value in array
+        val = [self._ReadData()] # dummy value in array
         self._AppendData(val)
         return val 
 
@@ -63,6 +70,27 @@ class DataSrc( object ):
     def GetSeries(self, InputNumber):
         ''' @return:The data corresponding to the specified "column" '''
         return self._data[InputNumber]
+
+    #------- timer stuff ------
+    @property   
+    def IsTimerRunning(self):
+        if not self._WorkerThread:
+            return False
+        return self._WorkerThread.isAlive()
+
+    def _ThreadMain(self, EventFunction):
+        while( self._RunThread.isSet( )):
+            self._ReadData()
+            EventFunction()
+        
+            # TODO: do a timer thing to do real ms interval, not runtime+interval
+            time.sleep( (1.0*self._ReadInterval)/1000 )
+
+    def StartTimer(self, EventFunction):
+        self._WorkerThread = threading.Thread( name="DataSrc timer thread", target=self._ThreadMain, args=(EventFunction, ) )
+        self._WorkerThread.daemon = True
+        self._RunThread.set()
+        self._WorkerThread.start()
     
 class CsvDataSrc( DataSrc ):
     def __init__(self, filename, ReadInterval = 0 ):
