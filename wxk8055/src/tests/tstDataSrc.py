@@ -6,15 +6,16 @@ Created on 18 Feb 2013
 import unittest
 from DataSrc import DataSrc
 
+interval = 100 
+class TestDataSrc(unittest.TestCase):
 
-class Test(unittest.TestCase):
-
-
-    def testDataSrc(self):
-        interval = 100
-        d = DataSrc( 100 )
+    def testConstruction(self):
+        d = DataSrc( interval )
         self.assertEqual( d.ReadInterval, interval )
 
+    def testNext(self):
+        d = DataSrc( interval )
+        self.assertEqual( len(d.next()), d.Inputs )
     
 
 if __name__ == "__main__":

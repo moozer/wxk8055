@@ -19,7 +19,15 @@ class DataSrc( object ):
 
     def next(self):
         ''' @return: the values read since last call to this function '''
-        return [0]
+        return [[0]] # dummy value
+
+    @property
+    def Inputs(self):
+        ''' @return: the number of inputs "lines" in the system '''
+        return len( self.next() )
+        pass
+    
+    
 
 #class CsvDataSrc(object):
 #    '''
