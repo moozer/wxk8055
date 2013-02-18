@@ -11,7 +11,7 @@ class DataSrc( object ):
     """
     def __init__(self, ReadInterval ):
         self._ReadInterval = ReadInterval
-        self._Inputs = len( self.next() )
+        self._Inputs = 1 # just hardcode something that corresponds to next()
         pass
         
     @property
@@ -35,5 +35,9 @@ class CsvDataSrc( DataSrc ):
         
         self._CsvReader = csv.DictReader( self._csvfile, delimiter='\t' )
         self._Inputs = len( self._CsvReader.fieldnames )
-        
         pass
+    
+    def next(self):
+        ''' @return: the entry converted to float '''
+        return map(float, self._CsvReader.next().values() )
+    

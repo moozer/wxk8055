@@ -9,6 +9,8 @@ from DataSrc import DataSrc, CsvDataSrc
 interval = 100 
 CsvFile = 'data/TwoInputs.csv'
 Inputs = 3
+CsvData = [[0,0,0], [1,0,0], [2,0,0]]
+
 
 class TestDataSrc(unittest.TestCase):
 
@@ -29,9 +31,16 @@ class TestCsvDataSrc(unittest.TestCase):
     def testBadFilename(self):
         self.assertRaises( IOError, CsvDataSrc, 'NonExistingFilename')
 
-    def testNext(self):
+    def testInputCount(self):
         d = CsvDataSrc( CsvFile )
         self.assertEqual( Inputs, d.Inputs )
+        
+    def testNext(self):
+        d = CsvDataSrc( CsvFile )
+        self.assertEqual( d.next(), CsvData[0] )
+        self.assertEqual( d.next(), CsvData[1] )
+        self.assertEqual( d.next(), CsvData[2] )
+        
     
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testDataSrc']
