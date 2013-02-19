@@ -16,12 +16,12 @@ class DataSrc( object ):
 
     def __init__(self, ReadInterval ):
         self._ReadInterval = ReadInterval
-        self._Inputs = 1 # just hardcode something that corresponds to _ReadData()
+        self._Inputs = 2 # just hardcode something that corresponds to _ReadData()
         self._WorkerThread = None 
         self._RunThread = threading.Event() # if isSet(), then the thread is running
-        self._PendingData = [] # retrieved data, that has not been next()'ed.
+        self._PendingData = [] # retrieved data, that has not been next()'ed. Is a list of entries
         self._PendingDataLock = threading.Lock()
-        self._InitDataArray()
+        self._InitDataArray() # self._data is a list of inputs
         pass
         
     def _InitDataArray(self):
@@ -35,20 +35,21 @@ class DataSrc( object ):
         return self._ReadInterval
 
 
+    # --- Data stuff -----
     def _AppendData(self, data):
         ''' saves the entries to the internal data storage 
-        @param data: a list of lists of data - might look odd for single values :-) ie. [[3]]
+        @param data: a list of entries - might look odd for single values :-) ie. [[3]]
         '''
         for entry in data:
             for i in range(0, self._Inputs):
-                self._data[i].append(entry[i])
+                self._data[i].append(entry[i]) # convert from entries to inputs
 
     def _ReadData(self):
         ''' @return: a list of lists of acquired data '''
-        return [[random.uniform(0, 100)]] # dummy value
+        return [[random.uniform(0, 100), random.uniform(0, 100)]] # dummy values (2 inputs, 1 entry)
 
     def next(self):
-        ''' @return: the values read since last call to this function '''
+        ''' @return: the list of entries read since last call to this function '''
         with self._PendingDataLock:
             val = copy.copy( self._PendingData )
             self._PendingData = [] # and reset to zero.
@@ -63,14 +64,14 @@ class DataSrc( object ):
         ''' @return: the number of inputs "lines" in the system '''
         return self._Inputs
 
-    def GetMax(self, default = 10):
+    def GetMax(self, default = 10.0):
         ''' @returns the highest value of currently read data '''
         if len(self._data[0]) == 0:
             return default
         maxlist = [max( datalist ) for datalist in self._data]
         return max(maxlist)
 
-    def GetMin(self, default = 0):
+    def GetMin(self, default = 0.0):
         ''' @returns the highest value of currently read data '''
         if len(self._data[0]) == 0:
             return default
@@ -88,28 +89,32 @@ class DataSrc( object ):
         ''' @return:The data corresponding to the specified "column" '''
         return self._data[InputNumber]
 
-    #------- timer stuff ------
+    #------- thread stuff ------
     @property   
     def IsTimerRunning(self):
         if not self._WorkerThread:
             return False
         return self._WorkerThread.isAlive()
 
-    def _ThreadMain(self, EventFunction):
+    def _ThreadMain(self, EventFunction, params ):
         while( self._RunThread.isSet( )):
             data = self._ReadData()
             with self._PendingDataLock:
-                self._PendingData.append( data )
+                for d in data:
+                    self._PendingData.append( d )
             
-            EventFunction()
+            if params:
+                EventFunction( params )
+            else:
+                EventFunction()
         
             # TODO: do a timer thing to do real ms interval, not runtime+interval
             time.sleep( (1.0*self._ReadInterval)/1000 )
 
-    def StartTimer(self, EventFunction):
+    def StartTimer(self, EventFunction, params = None ):
         self._WorkerThread = threading.Thread( name="DataSrc timer thread", 
                                                target=self._ThreadMain, 
-                                               args=(EventFunction, ) )
+                                               args=(EventFunction, params) )
         self._WorkerThread.daemon = True
         self._RunThread.set()
         self._WorkerThread.start()

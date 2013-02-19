@@ -31,7 +31,7 @@ class TestDataSrc(unittest.TestCase):
 
     def testNext(self):
         d = DataSrc( interval )
-        self.assertEqual( len(d.next()), d.Inputs )
+        self.assertEqual( len(d.next()), 1 )
     
     def testGetMaxMin(self):
         d = DataSrc( interval )
