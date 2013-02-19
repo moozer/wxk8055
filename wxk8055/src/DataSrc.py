@@ -157,5 +157,3 @@ class CsvDataSrc( DataSrc ):
             
         return retarray
     
-#    def next(self):
-#        return self.next()

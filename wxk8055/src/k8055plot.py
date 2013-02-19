@@ -6,6 +6,7 @@ Created on 19 Feb 2013
 
 # TODO: handle warning
 import matplotlib
+from k8055DataSrc import k8055DataSrc
 matplotlib.use('WXAgg')
 
 from matplotlib.figure import Figure
@@ -14,11 +15,11 @@ from matplotlib.backends.backend_wxagg import \
 import pylab
 from wxk8055gui import MyFrame
 import wx
-from DataSrc import DataSrc
+from DataSrc import DataSrc, CsvDataSrc
 import numpy as np
 
 def IssueUpdatePlotEvent( wxObject ):
-    print "IssueUpdatePlotEvent"
+    #print "IssueUpdatePlotEvent"
     wx.CallAfter( wxObject.draw_plot )
     
 class MainFrame( MyFrame ):
@@ -68,12 +69,12 @@ class MainFrame( MyFrame ):
     def draw_plot(self):
         """ Redraws the plot
         """
-        print "plotting... "
-        print "pending: %d"%self._datagen.PendingCount 
+        #print "plotting... "
+        #print "pending: %d"%self._datagen.PendingCount 
 
         if not self._paused and self._datagen.PendingCount > 0:
             self._datagen.next() # update of data
-        print "pending: %d"%self._datagen.PendingCount 
+        #print "pending: %d"%self._datagen.PendingCount 
         
         
         xmin, xmax = self.GetXMinMax()
@@ -160,7 +161,9 @@ class MainFrame( MyFrame ):
         MyFrame.OnFileSave(self, event)
 
 if __name__ == '__main__':
-    datasource = DataSrc( 500 )
+    #datasource = DataSrc( 500 )
+    #datasource = CsvDataSrc( 'tests/data/TwoInputs.csv')    
+    datasource = k8055DataSrc()
     
     wxk8055 = wx.PySimpleApp(0)
     wx.InitAllImageHandlers()
