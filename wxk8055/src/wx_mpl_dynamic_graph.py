@@ -19,6 +19,7 @@ Last modified: 31.07.2008
 
 ref.
 - http://www.blog.pythonlibrary.org/2010/05/22/wxpython-and-threads/
+- http://eli.thegreenplace.net/2008/08/01/matplotlib-with-wxpython-guis/
 """
 import os
 import pprint
@@ -40,11 +41,11 @@ import pylab
 from DataSrc import DataSrc
 
 def IssueUpdatePlotEvent( wxObject ):
-    print "PlotEvent"
+    print "IssueUpdatePlotEvent"
     wx.CallAfter( wxObject.draw_plot )
 
 
-class BoundControlBox(wx.Panel):
+class PanelBoundControlBox(wx.Panel):
     """ A static box with a couple of radio buttons and a text
         box. Allows to switch between an automatic mode and a 
         manual mode with an associated value.
@@ -78,12 +79,13 @@ class BoundControlBox(wx.Panel):
         
         self.SetSizer(sizer)
         sizer.Fit(self)
-        
-            
+                    
     def on_update_manual_text(self, event):
+        #print "on_update_manual_text"
         self.manual_text.Enable(self.radio_manual.GetValue())
     
     def on_text_enter(self, event):
+        #print "on_text_enter: %s"%self.manual_text.GetValue()
         self.value = self.manual_text.GetValue()
     
     def is_auto(self):
@@ -134,10 +136,10 @@ class GraphFrame(wx.Frame):
         self.init_plot()
         self.canvas = FigCanvas(self.panel, -1, self.fig)
 
-        self.xmin_control = BoundControlBox(self.panel, -1, "X min", 0)
-        self.xmax_control = BoundControlBox(self.panel, -1, "X max", 50)
-        self.ymin_control = BoundControlBox(self.panel, -1, "Y min", 0)
-        self.ymax_control = BoundControlBox(self.panel, -1, "Y max", 100)
+        self.xmin_control = PanelBoundControlBox(self.panel, -1, "X min", 0)
+        self.xmax_control = PanelBoundControlBox(self.panel, -1, "X max", 50)
+        self.ymin_control = PanelBoundControlBox(self.panel, -1, "Y min", 0)
+        self.ymax_control = PanelBoundControlBox(self.panel, -1, "Y max", 100)
         
         self.pause_button = wx.Button(self.panel, -1, "Pause")
         self.Bind(wx.EVT_BUTTON, self.on_pause_button, self.pause_button)
@@ -286,6 +288,8 @@ class GraphFrame(wx.Frame):
         self._paused = not self._paused
     
     def on_update_pause_button(self, event):
+        #print "on_update_pause_button"
+        
         label = "Resume" if self._paused else "Pause"
         self.pause_button.SetLabel(label)
     
@@ -311,15 +315,6 @@ class GraphFrame(wx.Frame):
             self.canvas.print_figure(path, dpi=self.dpi)
             self.flash_status_message("Saved to %s" % path)
     
-    def on_redraw_timer(self, event):
-        # if _paused do not add data, but still redraw the plot
-        # (to respond to scale modifications, grid change, etc.)
-        #
-        if not self._paused:
-            self._datagen.next() # no update of data
-        
-        self.draw_plot()
-    
     def on_exit(self, event):
         self.Destroy()
     
@@ -338,7 +333,7 @@ class GraphFrame(wx.Frame):
 
 if __name__ == '__main__':
     app = wx.PySimpleApp()
-    app.frame = GraphFrame( DataSrc( 100 ) )
+    app.frame = GraphFrame( DataSrc( 5000 ) )
     app.frame.Show()
     app.MainLoop()
 
