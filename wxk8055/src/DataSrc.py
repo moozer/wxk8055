@@ -112,6 +112,10 @@ class DataSrc( object ):
             time.sleep( (1.0*self._ReadInterval)/1000 )
 
     def StartTimer(self, EventFunction, params = None ):
+        # we don't do thread if we have no interval
+        if self._ReadInterval == 0:
+            return
+        
         self._WorkerThread = threading.Thread( name="DataSrc timer thread", 
                                                target=self._ThreadMain, 
                                                args=(EventFunction, params) )

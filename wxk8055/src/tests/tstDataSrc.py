@@ -79,6 +79,13 @@ class TestDataSrc(unittest.TestCase):
         self.assertEqual(d.GetMax( 10 ), 10)
         self.assertEqual(d.GetMin( 0), 0 )
 
+    def testTimerThreadIntervalZero(self):
+        d = DataSrc( 0 )
+        self.assertEqual(d.IsTimerRunning, False)
+        d.StartTimer( IncFunction )
+        self.assertEqual(d.IsTimerRunning, False)
+
+
  
 class TestCsvDataSrc(unittest.TestCase):
 
