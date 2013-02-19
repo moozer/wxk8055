@@ -23,6 +23,6 @@ if __name__ == '__main__':
     ReadInterval = 500 # in ms
    
     app = wx.PySimpleApp()
-    app.frame = GraphFrame( DataSrc, ReadInterval )
+    app.frame = GraphFrame( DataSrc )
     app.frame.Show()
     app.MainLoop()
