@@ -16,6 +16,9 @@ affect the plot.
 Eli Bendersky (eliben@gmail.com)
 License: this code is in the public domain
 Last modified: 31.07.2008
+
+ref.
+- http://www.blog.pythonlibrary.org/2010/05/22/wxpython-and-threads/
 """
 import os
 import pprint
@@ -36,36 +39,9 @@ import numpy as np
 import pylab
 from DataSrc import DataSrc
 
-#class DataGen(object):
-#    """ A silly class that generates pseudo-random data for
-#        display in the plot.
-#    """
-#    def __init__(self, init=50):
-#        self.data = [init, init]
-#        self.init = init
-#        
-#    def next(self):
-#        self._recalc_data(0)
-#        self._recalc_data(1)
-#        return [self.data]
-#    
-#    def _recalc_data(self, entry):
-#        delta = random.uniform(-0.5, 0.5)
-#        r = random.random()
-#
-#        if r > 0.9:
-#            self.data[entry] += delta * 15
-#        elif r > 0.8: 
-#            # attraction to the initial value
-#            delta += (0.5 if self.init > self.data[entry] else -0.5)
-#            self.data[entry] += delta
-#        else:
-#            self.data[entry] += delta
-#    
-#    @property
-#    def Inputs(self):
-#        return 2       
-
+def IssueUpdatePlotEvent( wxObject ):
+    print "PlotEvent"
+    wx.CallAfter( wxObject.draw_plot )
 
 
 class BoundControlBox(wx.Panel):
@@ -102,7 +78,8 @@ class BoundControlBox(wx.Panel):
         
         self.SetSizer(sizer)
         sizer.Fit(self)
-    
+        
+            
     def on_update_manual_text(self, event):
         self.manual_text.Enable(self.radio_manual.GetValue())
     
@@ -121,7 +98,7 @@ class GraphFrame(wx.Frame):
     """
     title = 'Demo: dynamic matplotlib graph'
     
-    def __init__(self, datagen, RefreshTime = 100 ):
+    def __init__(self, datagen ):
         wx.Frame.__init__(self, None, -1, self.title)
         
         self._datagen = datagen
@@ -133,11 +110,10 @@ class GraphFrame(wx.Frame):
         self.create_menu()
         self.create_status_bar()
         self.create_main_panel()
-        
-        self._redraw_timer = wx.Timer(self)
-        self.Bind(wx.EVT_TIMER, self.on_redraw_timer, self._redraw_timer)        
-        self._redraw_timer.Start(RefreshTime)
 
+        # start acquisition loop
+        self._datagen.StartTimer( IssueUpdatePlotEvent, self )
+        
 
     def create_menu(self):
         self.menubar = wx.MenuBar()
@@ -269,6 +245,14 @@ class GraphFrame(wx.Frame):
     def draw_plot(self):
         """ Redraws the plot
         """
+        print "plotting... "
+        print "pending: %d"%self._datagen.PendingCount 
+
+        if not self._paused and self._datagen.PendingCount > 0:
+            self._datagen.next() # update of data
+        print "pending: %d"%self._datagen.PendingCount 
+        
+        
         xmin, xmax = self.GetXMinMax()
         ymin, ymax = self.GetYMaxMin()
 
@@ -354,7 +338,7 @@ class GraphFrame(wx.Frame):
 
 if __name__ == '__main__':
     app = wx.PySimpleApp()
-    app.frame = GraphFrame( DataSrc( 100 ), 100 )
+    app.frame = GraphFrame( DataSrc( 100 ) )
     app.frame.Show()
     app.MainLoop()
 
