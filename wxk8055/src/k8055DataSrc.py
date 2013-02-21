@@ -6,6 +6,9 @@ Created on 17 Feb 2013
 from k8055 import Board
 from DataSrc import DataSrc
 import csv
+from glob import glob
+import re
+import os
 
 # TODO: comments and unittesting...
 
@@ -17,7 +20,7 @@ class k8055DataSrc(DataSrc):
         self._InitDataArray( 3 )  # counter, a1, a2
 
         # TODO: automatic next file
-        self._filename = "Run.csv"        
+        self._filename = self._GetNextFilename()
         self._CsvWriter = csv.writer(open(self._filename, "w+"), delimiter='\t',
                         quotechar='|', quoting=csv.QUOTE_MINIMAL)
 
@@ -34,7 +37,17 @@ class k8055DataSrc(DataSrc):
         
         return [data]
     
-    
+    def _GetNextFilename(self, Basename = 'Run'):
+        CurrentCvsFiles = glob( '%s[0-9][0-9][0-9].csv'%Basename)
+        if len(CurrentCvsFiles) == 0:
+            return "%s%03d.csv"%(Basename, 0)
+            
+        result_int = [int(re.findall(r'[0-9]+', filename)[0]) for filename in CurrentCvsFiles]
+        
+        LargestInt = sorted(result_int)[-1]
+        
+        return "%s%03d.csv"%(Basename, LargestInt+1)
+        
     
 #class CsvDataSrc( DataSrc ):
 #    def __init__(self, filename, ReadInterval = 0 ):

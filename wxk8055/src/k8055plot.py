@@ -144,10 +144,7 @@ class MainFrame( MyFrame ):
         else:
             ymax = int(self.ControlBoxYMax.manual_value())
             
-        if ymax == ymin:
-            ymax = ymin+1
-            
-        return ymin, ymax
+        return ymin-1, ymax+1
     
     # -- overloading event handlers
     
@@ -162,7 +159,7 @@ class MainFrame( MyFrame ):
 
 if __name__ == '__main__':
     #datasource = DataSrc( 500 )
-    #datasource = CsvDataSrc( 'tests/data/TwoInputs.csv')    
+    #datasource = CsvDataSrc( 'Run.csv')    
     datasource = k8055DataSrc( ReadInterval = 200)
     
     wxk8055 = wx.PySimpleApp(0)
