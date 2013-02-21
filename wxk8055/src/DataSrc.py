@@ -114,6 +114,8 @@ class DataSrc( object ):
     def StartTimer(self, EventFunction, params = None ):
         # we don't do thread if we have no interval
         if self._ReadInterval == 0:
+            for d in self.next():
+                self._PendingData.append( d )
             return
         
         self._WorkerThread = threading.Thread( name="DataSrc timer thread", 

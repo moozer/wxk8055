@@ -30,10 +30,15 @@ class MainFrame( MyFrame ):
         self._datagen = datagen
         self._SkipCount = 1 # the this number of inputs in the graph
         self.init_plot()
+
+        self.Bind(wx.EVT_UPDATE_UI, self.OnUiUpdate, self.ControlBoxXMax)
+        self.Bind(wx.EVT_UPDATE_UI, self.OnUiUpdate, self.ControlBoxYMax)
+        self.Bind(wx.EVT_UPDATE_UI, self.OnUiUpdate, self.ControlBoxXMin)
+        self.Bind(wx.EVT_UPDATE_UI, self.OnUiUpdate, self.ControlBoxYMin)
         
         # start acquisition loop
         self._datagen.StartTimer( IssueUpdatePlotEvent, self )
-        
+        IssueUpdatePlotEvent(self)
 
     def init_plot(self):
          
@@ -146,7 +151,10 @@ class MainFrame( MyFrame ):
             ymax = int(self.ControlBoxYMax.manual_value())
             
         return ymin-1, ymax+1
-    
+
+    def OnUiUpdate(self, event):
+        self.draw_plot()
+        
     # -- overloading event handlers
     
     def OnQuitButtonClick(self, event):
@@ -160,8 +168,8 @@ class MainFrame( MyFrame ):
 
 if __name__ == '__main__':
     #datasource = DataSrc( 500 )
-    #datasource = CsvDataSrc( 'Run.csv')    
-    datasource = k8055DataSrc( ReadInterval = 200)
+    #datasource = CsvDataSrc( 'Run000.csv')    
+    datasource = k8055DataSrc( ReadInterval = 2000)
     
     wxk8055 = wx.PySimpleApp(0)
     wx.InitAllImageHandlers()

@@ -116,6 +116,11 @@ class TestCsvDataSrc(unittest.TestCase):
         self.assertEqual(d.GetMax(), CsvEntriesMaxVal)
         self.assertEqual(d.GetMin(), CsvEntriesMinVal)
         
+    def testGuiUsage(self):
+        d = CsvDataSrc( CsvFile )
+        d.StartTimer( None )
+        
+        self.assertGreater( d.PendingCount, 0)
     
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testDataSrc']
