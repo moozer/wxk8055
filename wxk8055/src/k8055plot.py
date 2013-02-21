@@ -163,7 +163,7 @@ class MainFrame( MyFrame ):
 if __name__ == '__main__':
     #datasource = DataSrc( 500 )
     #datasource = CsvDataSrc( 'tests/data/TwoInputs.csv')    
-    datasource = k8055DataSrc()
+    datasource = k8055DataSrc( ReadInterval = 200)
     
     wxk8055 = wx.PySimpleApp(0)
     wx.InitAllImageHandlers()

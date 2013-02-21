@@ -16,15 +16,15 @@ class DataSrc( object ):
 
     def __init__(self, ReadInterval ):
         self._ReadInterval = ReadInterval
-        self._Inputs = 2 # just hardcode something that corresponds to _ReadData()
         self._WorkerThread = None 
         self._RunThread = threading.Event() # if isSet(), then the thread is running
         self._PendingData = [] # retrieved data, that has not been next()'ed. Is a list of entries
         self._PendingDataLock = threading.Lock()
-        self._InitDataArray() # self._data is a list of inputs
+        self._InitDataArray( 2 ) # self._data is a list of inputs, must be called by derived classes
         pass
         
-    def _InitDataArray(self):
+    def _InitDataArray(self, InputCount ):
+        self._Inputs = InputCount
         self._data = []  # array to hold data to show
         for channel in range( 0, self._Inputs ):  #@UnusedVariable
             self._data.append( [] )

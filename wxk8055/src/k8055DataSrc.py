@@ -5,20 +5,34 @@ Created on 17 Feb 2013
 '''
 from k8055 import Board
 from DataSrc import DataSrc
+import csv
 
 # TODO: comments and unittesting...
 
 class k8055DataSrc(DataSrc):
     def __init__(self, ReadInterval = 500, address = 0):
         super(k8055DataSrc,self).__init__( ReadInterval =  ReadInterval )        
-        self.b = Board( address = address )
+        self._board = Board( address = address )
+        self._counter = 0
+        self._InitDataArray( 3 )  # counter, a1, a2
+
+        # TODO: automatic next file
+        self._filename = "Run.csv"        
+        self._CsvWriter = csv.writer(open(self._filename, "w+"), delimiter='\t',
+                        quotechar='|', quoting=csv.QUOTE_MINIMAL)
+
+        self._CsvWriter.writerow( ["Count", "a1 [inc]", "a2 [inc]"] )
         
     def _ReadData(self):
-        self.b.read()
-        a1 = float(self.b.analog1)
-        a2 = float(self.b.analog2)
+        self._board.read()
+        a1 = float(self._board.analog1)
+        a2 = float(self._board.analog2)
+        self._counter += 1
         
-        return [[a1, a2]]
+        data = [self._counter, a1, a2]
+        self._CsvWriter.writerow( data )
+        
+        return [data]
     
     
     
