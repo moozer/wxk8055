@@ -139,8 +139,7 @@ class CsvDataSrc( DataSrc ):
 
         self._csvfile = open( filename, 'r')
         self._CsvReader = csv.DictReader( self._csvfile, delimiter='\t' )
-        self._Inputs = len( self._CsvReader.fieldnames )
-        self._InitDataArray()
+        self._InitDataArray( len( self._CsvReader.fieldnames ) )
         pass
     
     def _ReadData(self):
