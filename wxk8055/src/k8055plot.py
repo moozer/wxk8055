@@ -28,6 +28,7 @@ class MainFrame( MyFrame ):
                 
         self._paused = False # TODO: add button to handle pausing
         self._datagen = datagen
+        self._SkipCount = 1 # the this number of inputs in the graph
         self.init_plot()
         
         # start acquisition loop
@@ -102,7 +103,7 @@ class MainFrame( MyFrame ):
 #        pylab.setp(self.axes.get_xticklabels(), 
 #            visible=self.cb_xlab.IsChecked())
         
-        for i in range( 0, self._datagen.Inputs ):
+        for i in range( self._SkipCount, self._datagen.Inputs ):
             self._plot_data[i].set_xdata(np.arange( self._datagen.Count ))
             self._plot_data[i].set_ydata(np.array(self._datagen.GetSeries(i)))
         
